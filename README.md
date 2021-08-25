@@ -1,6 +1,6 @@
 # ControlAllocationSwitching
 - A repository for the codes used in the paper,
-Jinrae Kim et al., "Control Allocation Switching Scheme for Fault Tolerant Control of Hexacopter", presented in [2021 Asia-Pacific International Symposium on Aerospace Technology (APISAT2021), Jeju, Korea](https://apisat2021.org/).
+**Jinrae Kim et al., "Control Allocation Switching Scheme for Fault Tolerant Control of Hexacopter", presented in [2021 Asia-Pacific International Symposium on Aerospace Technology (APISAT2021), Jeju, Korea](https://apisat2021.org/)**.
 # Notes
 ## Dependencies (will automatically be installed via `Project.toml`)
 - [Julia](https://julialang.org/) v1.6.2
