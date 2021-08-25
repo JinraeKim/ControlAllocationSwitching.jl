@@ -9,11 +9,9 @@
 - etc.
 
 # How to reproduce the simulation result?
-## Simulation
-Run the function `test()` in `main/main.jl`.
-## Drawing figures
-Run the function `test()` in `main/figures.jl`.
-### Examples
+Run the function `main()` in `main.jl`.
+
+## Examples
 - Hexacopter description
 
 ![ex_screenshot](./figures/hexacopter_description.png)
