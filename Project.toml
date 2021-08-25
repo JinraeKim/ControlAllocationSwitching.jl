@@ -3,6 +3,20 @@ uuid = "154caffb-4ba1-490d-89b8-7c8f628b04b9"
 authors = ["JinraeKim <kjl950403@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+FaultTolerantControl = "45299f66-0548-4da8-9567-4dae0facc19d"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+FlightSims = "a4c2f6ca-3fbe-4430-8ede-32935de4c069"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+NumericalIntegration = "e7bfaba1-d571-5449-8927-abc22e82249b"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
+Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
+UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+
 [compat]
 julia = "1"
 
