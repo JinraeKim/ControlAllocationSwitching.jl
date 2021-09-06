@@ -10,9 +10,15 @@ function run_sim(method, dir_log, file_name="switching.jld2")
         @unpack m, B, u_min, dim_input = multicopter
         τ = 0.2
         fdi = DelayFDI(τ)
+        # case 1: actuator saturated
+        # faults = FaultSet(
+        #                   LoE(3.0, 1, 0.3),  # t, index, level
+        #                   LoE(5.0, 3, 0.1),
+        #                  )  # Note: antisymmetric configuration of faults can cause undesirable control allocation; sometimes it is worse than multiple faults of rotors in symmetric configuration.
+        # case 2: actuator not saturated
         faults = FaultSet(
-                          LoE(3.0, 1, 0.3),  # t, index, level
-                          LoE(5.0, 3, 0.1),
+                          LoE(3.0, 1, 0.5),  # t, index, level
+                          LoE(5.0, 3, 0.5),
                          )  # Note: antisymmetric configuration of faults can cause undesirable control allocation; sometimes it is worse than multiple faults of rotors in symmetric configuration.
         plant = FTC.DelayFDI_Plant(multicopter, fdi, faults)
         @unpack multicopter = plant
@@ -130,11 +136,16 @@ function plot_figures(method, dir_log, saved_data)
     ts_tick = ts[1:100:end]
     tstr = ts_tick |> Map(t -> @sprintf("%0.0f", t)) |> collect
     tstr_empty = ts_tick |> Map(t -> "") |> collect
+    # background color
+    ts_from_fault1_to_fault2 = 3:0.01:5
+    ts_from_fault2_to_end = 5:0.01:15
     ## pos
+    ylim_p_pos = (-4, 6)
     p_pos = plot(;
                  title="position",
-                 legend=:bottomright,
-                 ylabel="position (m)"
+                 legend=:topleft,
+                 ylabel="position (m)",
+                 ylim=ylim_p_pos,
                 )
     xticks!(ts_tick, tstr_empty)
     plot!(p_pos, ts, xs;
@@ -161,7 +172,24 @@ function plot_figures(method, dir_log, saved_data)
           label=nothing, ls=:dash,
           color=3,  # i'th default color
          )
+    plot!(p_pos,
+          ts_from_fault1_to_fault2, 0.5*(ylim_p_pos[2]+ylim_p_pos[1])*ones(size(ts_from_fault1_to_fault2));  # time period until fault 1
+          ribbon=0.5*(ylim_p_pos[2]-ylim_p_pos[1])*ones(size(ts_from_fault1_to_fault2)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:orange,
+          label=nothing,
+         )
+    plot!(p_pos,
+          ts_from_fault2_to_end, 0.5*(ylim_p_pos[2]+ylim_p_pos[1])*ones(size(ts_from_fault2_to_end));  # time period until fault 1
+          ribbon=0.5*(ylim_p_pos[2]-ylim_p_pos[1])*ones(size(ts_from_fault2_to_end)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:red,
+          label=nothing,
+         )
     ## Λ
+    ylim_p__Λ = (-0.1, 1.1)
     p__Λ = plot(ts, hcat(_Λ̂s...)'; title="effectiveness vector",
                 ylim=(-0.1, 1.1),
                 label=["estimated" fill(nothing, dim_input-1)...],
@@ -175,19 +203,52 @@ function plot_figures(method, dir_log, saved_data)
                 ls=:dash,
                 legend=:right,
                )
+    plot!(p__Λ,
+          ts_from_fault1_to_fault2, 0.5*(ylim_p__Λ[2]+ylim_p__Λ[1])*ones(size(ts_from_fault1_to_fault2));  # time period until fault 1
+          ribbon=0.5*(ylim_p__Λ[2]-ylim_p__Λ[1])*ones(size(ts_from_fault1_to_fault2)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:orange,
+          label=nothing,
+         )
+    plot!(p__Λ,
+          ts_from_fault2_to_end, 0.5*(ylim_p__Λ[2]+ylim_p__Λ[1])*ones(size(ts_from_fault2_to_end));  # time period until fault 1
+          ribbon=0.5*(ylim_p__Λ[2]-ylim_p__Λ[1])*ones(size(ts_from_fault2_to_end)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:red,
+          label=nothing,
+         )
     ## method
     p_method = plot(;
                     title="method (adaptive: $(_method_dict[:adaptive]), optim: $(_method_dict[:optim]))",
                     legend=:topleft,
                    )
+    ylim_p_method = (-0.1, 1.1)
     plot!(p_method, ts, hcat(_methods...)';
           label="",
           color=:black,
           ylabel="method",
           xlabel="t (s)",
-          ylim=(-0.1, 1.1),
+          ylim=ylim_p_method,
          )
     xticks!(ts_tick, tstr)
+    plot!(p_method,
+          ts_from_fault1_to_fault2, 0.5*(ylim_p_method[2]+ylim_p_method[1])*ones(size(ts_from_fault1_to_fault2));  # time period until fault 1
+          ribbon=0.5*(ylim_p_method[2]-ylim_p_method[1])*ones(size(ts_from_fault1_to_fault2)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:orange,
+          label=nothing,
+         )
+    plot!(p_method,
+          ts_from_fault2_to_end, 0.5*(ylim_p_method[2]+ylim_p_method[1])*ones(size(ts_from_fault2_to_end));  # time period until fault 1
+          ribbon=0.5*(ylim_p_method[2]-ylim_p_method[1])*ones(size(ts_from_fault2_to_end)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:red,
+          label=nothing,
+         )
     ### states
     p_state = plot(p_pos, p__Λ, p_method;
                    link=:x,  # aligned x axes
@@ -199,13 +260,15 @@ function plot_figures(method, dir_log, saved_data)
                title="rotor input",
                legend=:topleft,
                ylabel="rotor force (N)",
+               xlabel="t (s)",
               )
-    xticks!(ts_tick, tstr_empty)
+    # xticks!(ts_tick, tstr_empty)  # to remove xticks
+    ylim_p_u = (minimum(u_min)-1, maximum(u_max)+5)
     plot!(p_u, ts, hcat(us_actual...)';
           # ylim=(-0.1*maximum(u_max), 1.1*maximum(u_max)),
           label=["input" fill(nothing, dim_input-1)...],
           color=:black,
-          ylim=(minimum(u_min)-1, maximum(u_max)+11)
+          ylim=ylim_p_u,
          )
     plot!(p_u, ts, maximum(u_max)*ones(size(ts));
           label="input min/max",
@@ -216,6 +279,22 @@ function plot_figures(method, dir_log, saved_data)
           label=nothing,
           ls=:dash,
           color=:red,
+         )
+    plot!(p_u,
+          ts_from_fault1_to_fault2, 0.5*(ylim_p_u[2]+ylim_p_u[1])*ones(size(ts_from_fault1_to_fault2));  # time period until fault 1
+          ribbon=0.5*(ylim_p_u[2]-ylim_p_u[1])*ones(size(ts_from_fault1_to_fault2)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:orange,
+          label=nothing,
+         )
+    plot!(p_u,
+          ts_from_fault2_to_end, 0.5*(ylim_p_u[2]+ylim_p_u[1])*ones(size(ts_from_fault2_to_end));  # time period until fault 1
+          ribbon=0.5*(ylim_p_u[2]-ylim_p_u[1])*ones(size(ts_from_fault2_to_end)),
+          color=:transparent,
+          fillalpha=0.1,
+          fillcolor=:red,
+          label=nothing,
          )
     ## ν
     # legend_ν = method == :adaptive ? :topleft : :left
@@ -281,10 +360,11 @@ function plot_figures(method, dir_log, saved_data)
              )
     end
     ### inputs
-    p_input = plot(p_u, p_F, p_M;
-                   link=:x,  # aligned x axes
-                   layout=(3, 1), size=(600, 600),
-                  )
+    # p_input = plot(p_u, p_F, p_M;
+    #                link=:x,  # aligned x axes
+    #                layout=(3, 1), size=(600, 600),
+    #               )
+    p_input = plot(p_u; size=(600, 600),)
     savefig(p_input, joinpath(dir_log, "input.pdf"))
 end
 

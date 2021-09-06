@@ -20,7 +20,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 [compat]
 julia = "1.6.2"
 DifferentialEquations = "6.19.0"
-FaultTolerantControl = "0.1.0"
+FaultTolerantControl = "0.1.1"
 FileIO = "1.11.0"
 FlightSims = "0.7.10"
 JLD2 = "0.4.13"
